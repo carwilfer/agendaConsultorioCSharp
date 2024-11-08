@@ -12,6 +12,7 @@ namespace AgendaConsutorio.service
     {
         private List<Paciente> pacientes = new List<Paciente>();
         private List<Agendamento> agendamentos = new List<Agendamento>();
+        private AgendaService agendaService = new AgendaService();
 
         public void AdicionarPaciente(Paciente paciente)
         {
@@ -35,7 +36,7 @@ namespace AgendaConsutorio.service
             }
             if (agendamentos.Any(a => a.CPF == cpf && a.IsFuturo()))
             {
-                Console.WriteLine("Erro: paciente está agendado.");
+                Console.WriteLine("Erro: paciente está agendado para uma consulta futura.");
                 return;
             }
 
@@ -83,6 +84,39 @@ namespace AgendaConsutorio.service
 
             agendamentos.Remove(agendamento);
             Console.WriteLine("Agendamento cancelado com sucesso!");
+        }
+
+        public void AlterarAgendamento(string cpf, DateTime dataConsulta, TimeSpan horaInicio, TimeSpan horaFim, DateTime novaDataConsulta, TimeSpan novaHoraInicio, TimeSpan novaHoraFim)
+        {
+            var agendamento = agendamentos.FirstOrDefault(a => a.CPF == cpf && a.DataConsulta == dataConsulta && a.HoraInicio == horaInicio);
+
+            if (agendamento == null)
+            {
+                Console.WriteLine($"Erro: Agendamento não encontrado para CPF: {cpf}, Data: {dataConsulta.ToShortDateString()}, Hora: {horaInicio}");
+                return;
+            }
+
+            // Verifica se existe conflito com o novo horário
+            if (VerificarConflito(novaDataConsulta, novaHoraInicio, novaHoraFim))
+            {
+                Console.WriteLine("Erro: Não é possível alterar, há um conflito de horário.");
+                return;
+            }
+
+            // Remover o agendamento antigo
+            agendamentos.Remove(agendamento);
+            Console.WriteLine("Agendamento anterior cancelado.");
+
+            // Adicionar o novo agendamento
+            var novoAgendamento = new Agendamento(cpf, novaDataConsulta, novaHoraInicio, novaHoraFim);
+            agendamentos.Add(novoAgendamento);
+            Console.WriteLine("Novo agendamento realizado com sucesso!");
+        }
+
+        private bool VerificarConflito(DateTime dataConsulta, TimeSpan horaInicio, TimeSpan horaFim)
+        {
+            return agendamentos.Any(a => a.DataConsulta == dataConsulta &&
+                                          ((a.HoraInicio < horaFim && a.HoraFim > horaInicio)));
         }
 
         public void ListarPacientes(bool ordenarPorNome)

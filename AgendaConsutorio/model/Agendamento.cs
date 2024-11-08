@@ -9,9 +9,9 @@ namespace AgendaConsutorio.model
     public class Agendamento
     {
         public string CPF { get; private set; }
-        public DateTime DataConsulta { get; private set; }
-        public TimeSpan HoraInicio { get; private set; }
-        public TimeSpan HoraFim { get; private set; }
+        public DateTime DataConsulta { get; set; }
+        public TimeSpan HoraInicio { get; set; }
+        public TimeSpan HoraFim { get; set; }
 
         public Agendamento(string cpf, DateTime dataConsulta, TimeSpan horaInicial, TimeSpan horaFinal)
         {
